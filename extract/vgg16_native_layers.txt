@@ -1,0 +1,46 @@
+(0, 'input_1')
+[None, 224, 224, 3]
+(1, 'block1_conv1')
+[None, 224, 224, 64]
+(2, 'block1_conv2')
+[None, 224, 224, 64]
+(3, 'block1_pool')
+[None, 112, 112, 64]
+(4, 'block2_conv1')
+[None, 112, 112, 128]
+(5, 'block2_conv2')
+[None, 112, 112, 128]
+(6, 'block2_pool')
+[None, 56, 56, 128]
+(7, 'block3_conv1')
+[None, 56, 56, 256]
+(8, 'block3_conv2')
+[None, 56, 56, 256]
+(9, 'block3_conv3')
+[None, 56, 56, 256]
+(10, 'block3_pool')
+[None, 28, 28, 256]
+(11, 'block4_conv1')
+[None, 28, 28, 512]
+(12, 'block4_conv2')
+[None, 28, 28, 512]
+(13, 'block4_conv3')
+[None, 28, 28, 512]
+(14, 'block4_pool')
+[None, 14, 14, 512]
+(15, 'block5_conv1')
+[None, 14, 14, 512]
+(16, 'block5_conv2')
+[None, 14, 14, 512]
+(17, 'block5_conv3')
+[None, 14, 14, 512]
+(18, 'block5_pool')
+[None, 7, 7, 512]
+(19, 'flatten')
+[None, None]
+(20, 'fc1')
+[None, 4096]
+(21, 'fc2')
+[None, 4096]
+(22, 'predictions')
+[None, 1000]

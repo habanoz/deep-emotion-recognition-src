@@ -1,0 +1,44 @@
+(0, u'input_1')
+[None, None, None, 3]
+(1, u'block1_conv1')
+[None, None, None, 64]
+(2, u'block1_conv2')
+[None, None, None, 64]
+(3, u'block1_pool')
+[None, None, None, 64]
+(4, u'block2_conv1')
+[None, None, None, 128]
+(5, u'block2_conv2')
+[None, None, None, 128]
+(6, u'block2_pool')
+[None, None, None, 128]
+(7, u'block3_conv1')
+[None, None, None, 256]
+(8, u'block3_conv2')
+[None, None, None, 256]
+(9, u'block3_conv3')
+[None, None, None, 256]
+(10, u'block3_pool')
+[None, None, None, 256]
+(11, u'block4_conv1')
+[None, None, None, 512]
+(12, u'block4_conv2')
+[None, None, None, 512]
+(13, u'block4_conv3')
+[None, None, None, 512]
+(14, u'block4_pool')
+[None, None, None, 512]
+(15, u'block5_conv1')
+[None, None, None, 512]
+(16, u'block5_conv2')
+[None, None, None, 512]
+(17, u'block5_conv3')
+[None, None, None, 512]
+(18, u'block5_pool')
+[None, None, None, 512]
+(19, u'global_average_pooling2d_1')
+[None, 512]
+(20, u'dense_1')
+[None, 1024]
+(21, u'dense_2')
+[None, 7]
