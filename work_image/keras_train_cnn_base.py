@@ -2,49 +2,27 @@ import glob
 import os
 import time
 
+import numpy
+from keras import backend as B
 from keras.applications.inception_v3 import InceptionV3
 from keras.applications.resnet50 import ResNet50
 from keras.applications.vgg16 import VGG16
-from keras.engine.training import Model
-from keras.layers.core import Dense, Flatten, Activation, Reshape, Dropout
-from keras.layers.pooling import GlobalAveragePooling2D
-from keras.layers.recurrent import SimpleRNN
-from keras.preprocessing.image import K
-from keras import backend as B
-from io import StringIO
-import numpy
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, CSVLogger, LambdaCallback
-from keras.metrics import top_k_categorical_accuracy
+from keras.engine.training import Model
+from keras.layers.core import Dense, Dropout
+from keras.layers.pooling import GlobalAveragePooling2D
 from keras.models import load_model
 from keras.preprocessing.image import ImageDataGenerator
-from keras.utils.generic_utils import get_custom_objects
-#from keras_vggface.vggface2 import VGGFace
 from sklearn.utils.class_weight import compute_class_weight
+
 from util.c_matrix import cmatrix_generator
 from work_image.VggFaceE3 import VGGFace
-from work_image.abstract_train_cnn_base import AbstactTrainCnnBase, SHUFFLE, SEED, VAL_BATCH_SIZE, \
-    PERTURBATION_THRESHOLD, PERTURBATION_PERIOD, EARLY_STOPPING_PATIENCE
+from work_image.abstract_train_cnn_base import AbstractTrainCnnBase, SHUFFLE, SEED, VAL_BATCH_SIZE, EARLY_STOP_PATIENCE
 
-LOSS = 'mean_squared_error'
-LOSS = 'categorical_hinge'
-
-def correntropy(sigma=1.):
-    def func(y_true, y_pred):
-        return -B.mean(B.exp(-B.square(y_true - y_pred)/sigma), -1)
-    return func
-
-LOSS=correntropy(sigma=1.)
 LOSS = 'categorical_crossentropy'
 
 
-def top_2_accuracy(y_true, y_pred):
-    return top_k_categorical_accuracy(y_true, y_pred, 2)
-
-
-get_custom_objects().update({'top_2_categorical_accuracy': top_2_accuracy})
-
-
-class KerasTrainCnnBase(AbstactTrainCnnBase):
+class KerasTrainCnnBase(AbstractTrainCnnBase):
     def __init__(self, work_dir, config, nb_classes):
 
         super(KerasTrainCnnBase, self).__init__(work_dir, config, nb_classes)
@@ -102,7 +80,6 @@ class KerasTrainCnnBase(AbstactTrainCnnBase):
 
         res.append(checkpointer)
 
-
         def on_epoch_end_callback(epoch, logs):
 
             train_log = []
@@ -129,13 +106,11 @@ class KerasTrainCnnBase(AbstactTrainCnnBase):
 
         res.append(lambda_callback)
 
-
         if base_only:
             return res
 
-
         # Helper: Stop training when we stop learning.
-        early_stopper = EarlyStopping(patience=EARLY_STOPPING_PATIENCE)
+        early_stopper = EarlyStopping(patience=EARLY_STOP_PATIENCE)
 
         res.append(early_stopper)
 
@@ -148,47 +123,23 @@ class KerasTrainCnnBase(AbstactTrainCnnBase):
 
     def get_optimizer_string(self):
         o = ""
-        #if isinstance(self.config.optimizer, basestrin):
         if isinstance(self.config.optimizer, str):
             o=o+('OPTIMIZER=' + str(self.config.optimizer) + str('\n'))
         else:
             o = o +('OPTIMIZER class=' + str(type(self.config.optimizer).__name__) + '\n')
             if hasattr(self.config.optimizer, 'lr'):
-                o = o +('OPTIMIZER lr=' + str(float(K.get_value(self.config.optimizer.lr))) + str('\n'))
+                o = o +('OPTIMIZER lr=' + str(float(B.get_value(self.config.optimizer.lr))) + str('\n'))
             if hasattr(self.config.optimizer, 'decay'):
-                o = o +('OPTIMIZER decay=' + str(float(K.get_value(self.config.optimizer.decay))) + str('\n'))
+                o = o +('OPTIMIZER decay=' + str(float(B.get_value(self.config.optimizer.decay))) + str('\n'))
             if hasattr(self.config.optimizer, 'momentum'):
-                o = o +('OPTIMIZER momentum=' + str(float(K.get_value(self.config.optimizer.momentum))) + str('\n'))
+                o = o +('OPTIMIZER momentum=' + str(float(B.get_value(self.config.optimizer.momentum))) + str('\n'))
         return o
-
-    def perturbate_if_difference(self):
-        while True:
-            train_result, val_result = self.get_train_val_acc()
-
-            print ("Train accuracy {} validation accuracy {}".format(train_result[1], val_result[1]))
-            with open(self.work_dir + "/perturbation.txt", "a") as f:
-                f.write("Train accuracy {} validation accuracy {}".format(train_result[1], val_result[1]))
-                f.write("\n")
-            if not abs(train_result[1] - val_result[1]) > PERTURBATION_THRESHOLD:
-                break
-
-            print ("Perturbation Running")
-            self.perturbate_model_layers()
-
 
     def get_train_val_acc(self):
         train_generator, val_generators = self.generators
         train_result = self.model.evaluate_generator(train_generator, self.TRAIN_DATA_COUNT / self.config.batch_size)
         val_result = self.model.evaluate_generator(val_generators, self.VALID_DATA_COUNT)
         return train_result, val_result
-
-    def perturbate_on_difference(self, logs):
-        self.last_perturbated_before += 1
-        if self.config.perturbate_epsilon and self.last_perturbated_before >= PERTURBATION_PERIOD and abs(
-                        logs['acc'] - logs['val_acc']) > PERTURBATION_THRESHOLD:
-            print ("Perturbation Running")
-            self.last_perturbated_before = 0
-            self.perturbate_model_layers()
 
     def train_model(self, nb_epoch=100, callbacks=None, adjust_class_weights=False):
         train_generator, validation_generator = self.generators
@@ -231,36 +182,18 @@ class KerasTrainCnnBase(AbstactTrainCnnBase):
                 self.model = self.load_model_from_file(self.config.weights_file)
                 self.train_top = False
                 self.model.summary()
-        if self.config.perturbate_epsilon:
-            self.perturbate_if_difference()
 
     def get_model_with_classification_head(self, base_model):
 
-        #x = base_model.output
-        #x = GlobalAveragePooling2D()(x)
-        #x = Flatten(name='flatten')(x)
-        #x = Dense(1024, activation='relu')(x)
-        #x = Dense(1024, activation='relu')(x)
-        #x = Dropout(0.5)(x)
-        #predictions = Dense(self.nb_classes, activation='softmax')(x)
-
         base_model.summary()
-        #x = base_model.get_layer('pool5').output
-
-        #x = base_model.get_layer('block5_pool').output
-        #x = base_model.get_layer('pool5').output
 
         x = base_model.output
-
         x = GlobalAveragePooling2D(name='flatten_1')(x)
         #x = Flatten(name='flatten_1')(x)
         x = Dense(1024, activation='relu', name='fc6_1')(x)
         x = Dense(1024, activation='relu', name='fc7_2')(x)
         x = Dropout(0.5)(x)
         predictions = Dense(self.nb_classes, activation='softmax', name='fc8_3')(x)
-
-        #x = Reshape((1,-1))(x)
-        #predictions = SimpleRNN(self.nb_classes, activation='softmax', name='rnn8_3')(x)
 
         # this is the model we will train
         model = Model(inputs=base_model.input, outputs=predictions)
@@ -273,7 +206,6 @@ class KerasTrainCnnBase(AbstactTrainCnnBase):
 
         return model
 
-
     def prepare_model_for_training(self):
         # set first layers frozen
         for layer in self.model.layers[:self.config.freeze_layers]:
@@ -282,23 +214,5 @@ class KerasTrainCnnBase(AbstactTrainCnnBase):
             layer.trainable = True
 
         # we need to recompile the model for these modifications to take effect
-        # self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.compile(optimizer=self.config.optimizer, loss=LOSS, metrics=['accuracy'])
-
-    def perturbate_model_layers(self):
-        """ Add random noise to layers """
-        for layer in self.model.layers[self.config.freeze_layers:]:
-            weights_list = layer.get_weights()
-            weights_list_new = []
-            for weights in weights_list:
-                std = numpy.std(weights)
-                permutations = numpy.random.normal(loc=0, scale=self.config.perturbate_epsilon * std,
-                                                   size=weights.shape)
-                weights_new = numpy.add(weights, permutations)
-                weights_list_new.append(weights_new)
-
-            if weights_list_new:
-                layer.set_weights(weights=weights_list_new)
-
-        self.config.perturbate_epsilon *= 0.8
 

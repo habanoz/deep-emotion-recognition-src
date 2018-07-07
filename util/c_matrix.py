@@ -12,18 +12,19 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+
 def cmatrix_generator(model, generator, nb_files, nb_classes=7):
     cmat = np.zeros((nb_classes, nb_classes), dtype=np.int32)
     generated = 0
     while generated < nb_files:
-        #Xlist, ylist = generator.next()
+
         Xlist, ylist = generator.next()
         for X, y in zip([Xlist], [ylist]):
-            #prediction = model.predict(np.array([X]))
+            # prediction = model.predict(np.array([X]))
             prediction = model.predict(X)
-            prediction_idx = np.argmax(prediction,axis=1)
-            actual_idx = np.argmax(y,axis=1)
-            for i,j in zip(actual_idx,prediction_idx):
+            prediction_idx = np.argmax(prediction, axis=1)
+            actual_idx = np.argmax(y, axis=1)
+            for i, j in zip(actual_idx, prediction_idx):
                 cmat[i, j] = 1 + cmat[i, j]
                 generated = generated + 1
     return cmat
@@ -42,8 +43,6 @@ def cmatrix(model, Xlist, ylist, nb_classes=7):
     return cmat
 
 
-
-
 def generate_cmax(data_dir, model, img_dims, batch_size, out_dir):
     valid_generator = ImageDataGenerator(rescale=1. / 255)
     valid_files = glob.glob(data_dir + '/Val/*/*.*')
@@ -60,9 +59,10 @@ def generate_cmax(data_dir, model, img_dims, batch_size, out_dir):
     result = model.evaluate_generator(validation_generator, len(valid_files) / batch_size)
 
     print_cmax(out_dir + '/cm.txt', cmat, result)
-    plot_confusion_matrix(cmat,out_dir+'/cm.png',validation_generator.class_indices.values(),normalize=True)
+    plot_confusion_matrix(cmat, out_dir + '/cm.png', validation_generator.class_indices.values(), normalize=True)
 
     return
+
 
 def plot_confusion_matrix(cm, file, classes,
                           normalize=False,
@@ -102,26 +102,26 @@ def plot_confusion_matrix(cm, file, classes,
     plt.close()
     plt.clf()
 
-def plot_acc_history(logs, file,vertical_line=None):
+
+def plot_acc_history(logs, file, vertical_line=None):
     plt.figure()
 
-    train_accuracy=[]
-    val_accuracy=[]
+    train_accuracy = []
+    val_accuracy = []
 
     if 'acc' in logs:
-        train_accuracy=logs['acc']
+        train_accuracy = logs['acc']
 
     if 'val_acc' in logs:
         val_accuracy = logs['val_acc']
 
     if 'top_acc' in logs and 'top_val_acc' in logs and vertical_line:
-        train_accuracy=logs['top_acc']+train_accuracy
-        val_accuracy = logs['top_val_acc'] +val_accuracy
+        train_accuracy = logs['top_acc'] + train_accuracy
+        val_accuracy = logs['top_val_acc'] + val_accuracy
 
     # add 0th element, epochs should start from 1
     train_accuracy = ([logs['init_train_acc']] if 'init_train_acc' in logs else [0]) + train_accuracy
     val_accuracy = ([logs['init_val_acc']] if 'init_val_acc' in logs else [0]) + val_accuracy
-
 
     # summarize history for accuracy
     plt.plot(train_accuracy)
@@ -132,13 +132,14 @@ def plot_acc_history(logs, file,vertical_line=None):
     plt.legend(['Train', 'Val'], loc='upper left')
 
     if 'top_acc' in logs and 'top_val_acc' in logs and vertical_line:
-        plt.axvline(vertical_line,color="red",linestyle='--')
+        plt.axvline(vertical_line, color="red", linestyle='--')
 
     plt.grid()
-    #plt.show()
+    # plt.show()
     plt.savefig(file)
     plt.close()
     plt.clf()
+
 
 def plot_loss_history(logs, file, vertical_line=None):
     plt.figure()
@@ -171,16 +172,17 @@ def plot_loss_history(logs, file, vertical_line=None):
         plt.axvline(vertical_line, color="red", linestyle='--')
 
     plt.grid()
-    #plt.show()
+    # plt.show()
     plt.savefig(file)
     plt.close()
     plt.clf()
 
-def plot_class_acc_history(class_index, logs, file,vertical_line=None):
+
+def plot_class_acc_history(class_index, logs, file, vertical_line=None):
     plt.figure()
 
-    train_accuracy = numpy.array(logs['train_per_class'])[:, class_index]
-    val_accuracy = numpy.array(logs['val_per_class'])[:, class_index]
+    #train_accuracy = numpy.array(logs['train_per_class'])[:, class_index]
+    #val_accuracy = numpy.array(logs['val_per_class'])[:, class_index]
 
     train_accuracy = []
     val_accuracy = []
@@ -192,8 +194,10 @@ def plot_class_acc_history(class_index, logs, file,vertical_line=None):
         val_accuracy = logs['val_per_class']
 
     if 'top_train_per_class' in logs and 'top_val_per_class' in logs and vertical_line:
-        train_accuracy = numpy.concatenate((numpy.array(logs['train_per_class'])[:, class_index],numpy.array(logs['top_train_per_class'])[:, class_index]))
-        val_accuracy = numpy.concatenate((numpy.array(logs['val_per_class'])[:, class_index],numpy.array(logs['top_val_per_class'])[:, class_index]))
+        train_accuracy = numpy.concatenate((numpy.array(logs['train_per_class'])[:, class_index],
+                                            numpy.array(logs['top_train_per_class'])[:, class_index]))
+        val_accuracy = numpy.concatenate((numpy.array(logs['val_per_class'])[:, class_index],
+                                          numpy.array(logs['top_val_per_class'])[:, class_index]))
 
     # summarize history for accuracy
     plt.plot(train_accuracy)
@@ -204,13 +208,14 @@ def plot_class_acc_history(class_index, logs, file,vertical_line=None):
     plt.legend(['Train', 'Val'], loc='upper left')
 
     if 'top_acc' in logs and 'top_val_acc' in logs and vertical_line:
-        plt.axvline(vertical_line,color="red",linestyle='--')
+        plt.axvline(vertical_line, color="red", linestyle='--')
 
     plt.grid()
-    #plt.show()
+    # plt.show()
     plt.savefig(file)
     plt.close()
     plt.clf()
+
 
 def print_cmax(file, cmat, results):
     with open(file, "w") as f:
@@ -239,22 +244,22 @@ def main():
 
     return
 
+
 def read_history_from_csv_file(file_path):
     with open(file_path, 'r') as fin:
         reader = csv.reader(fin)
         data = list(reader)
 
     headers = data[0]
-    data=numpy.array(data[1:])
+    data = numpy.array(data[1:])
 
-    result={}
+    result = {}
 
-    for i,header in enumerate(headers):
-        result[header]=data[:,i]
+    for i, header in enumerate(headers):
+        result[header] = data[:, i]
 
     return result
 
+
 if __name__ == '__main__':
     main()
-
-    # os.system("paplay /usr/share/sounds/ubuntu/ringtones/Ubuntu.ogg")

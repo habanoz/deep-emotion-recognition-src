@@ -37,10 +37,6 @@ model = Model(
 )
 
 features_dict = {}
-
-#image_generator = ImageDataGenerator(rescale=1. / 255)
-#generator = image_generator.flow_from_directory(target_data_dir, target_size=(224, 224), batch_size=1, shuffle=False)
-
 features=None
 
 for sample_file in sample_files:

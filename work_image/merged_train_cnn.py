@@ -25,7 +25,6 @@ class MergedModelCnn(EmotTrainCnnBase):
 
         EmotTrainCnnBase.__init__(self, work_dir,config=config)
 
-
     def train(self,nb_epoch=100):
         EmotTrainCnnBase.train(self,nb_epoch)
 
@@ -40,7 +39,6 @@ class MergedModelCnn(EmotTrainCnnBase):
 
         self.model=model
         self.train_top=True
-
 
     def get_generators(self, save_images=False):
         """

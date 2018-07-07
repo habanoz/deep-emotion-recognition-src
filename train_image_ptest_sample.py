@@ -1,12 +1,13 @@
 
-from keras.optimizers import SGD, Adam
-from work_image.abstract_train_cnn_base import TrainCnnConfiguration, AbstactTrainCnnBase
-from work_image.emot_train_cnn_base import EmotTrainCnnBase
 import sys
+
+from keras.optimizers import SGD
+from work_image.abstract_train_cnn_base import TrainCnnConfiguration, AbstractTrainCnnBase
+from work_image.emot_train_cnn_base import EmotTrainCnnBase
 
 # train a model.
 # suitable for running muliple times using run_train_image_ptest_sample.sh
-
+##############################################################################
 
 if len(sys.argv)<=1:
     raise Exception("provide work dir argument")
@@ -21,7 +22,7 @@ DIMENSION = 224
 LR = 0.001
 OPTIMIZER = SGD(lr=LR, momentum=0.9, decay=0.0005)
 
-AbstactTrainCnnBase.VALID_DATA_COUNT=2
+AbstractTrainCnnBase.VALID_DATA_COUNT=2
 img_train_gen_params={'rotation_range':20,'zoom_range':0.2,'horizontal_flip':True}
 img_train_gen_params=None
 

@@ -1,7 +1,6 @@
 from util.c_matrix import cmatrix, print_cmax, plot_acc_history, plot_loss_history, plot_confusion_matrix, cmatrix_generator, plot_class_acc_history
 
 
-
 def present_results_generator(work_dir, model, logs, validation_generator, val_data_count,classes,suffix='def',train_top_epochs=None):
     # present results
     results_file = work_dir + '/results-'+suffix+'.txt'
