@@ -18,6 +18,10 @@ Extract the dataset archive. In train_image.py do following steps:
 - Results will be written under WORK_DIR. Models will be saven under WORK_DIR/checkpoints directory. WORK_DIR/logs directory will cotain training history.
 - Confustion matrices, validation results, accuracy by epoch chart will be generated.
 
+More information can be found at engineering blog page:
+https://huseyinabanozeng.blogspot.com/2018/07/a-general-purpose-transfer-learning.html
+
+
 <h3>Preparing A Deep Learning System</h3>
 In order to prepare an Ubuntu system for deep learning follow instructions:
 
